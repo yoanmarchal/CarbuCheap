@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité — CarbuCheap</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+            background: #fff;
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 6px; color: #1a1a1a; }
+        .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 40px; }
+        h2 { font-size: 1.15rem; margin-top: 36px; margin-bottom: 10px; color: #1a1a1a; border-left: 3px solid #FF6B00; padding-left: 10px; }
+        p { margin-bottom: 12px; }
+        ul { padding-left: 20px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; }
+        a { color: #FF6B00; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .highlight-box {
+            background: #fff8f0;
+            border: 1px solid #ffd9b3;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 24px 0;
+        }
+        .highlight-box strong { color: #cc4400; }
+        footer { margin-top: 60px; font-size: 0.85rem; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>⛽ Politique de Confidentialité</h1>
+    <p class="subtitle">Application CarbuCheap &mdash; Dernière mise à jour : avril 2026</p>
+
+    <div class="highlight-box">
+        <strong>Résumé en 3 points :</strong>
+        <ul style="margin-top: 8px; margin-bottom: 0;">
+            <li>Votre position GPS est utilisée uniquement pour trouver les stations proches de vous.</li>
+            <li>Aucune donnée personnelle n'est collectée, stockée ou partagée avec des tiers.</li>
+            <li>L'application n'affiche aucune publicité.</li>
+        </ul>
+    </div>
+
+    <h2>1. Qui sommes-nous ?</h2>
+    <p>
+        CarbuCheap est une application Android gratuite développée par un particulier.
+        Elle n'est affiliée à aucune entreprise pétrolière, aucun réseau de stations-service,
+        ni aucune entité commerciale liée au secteur du carburant.
+    </p>
+
+    <h2>2. Données collectées</h2>
+    <p>CarbuCheap accède à une seule donnée sensible :</p>
+    <ul>
+        <li>
+            <strong>Localisation GPS (latitude et longitude)</strong> — uniquement au moment où vous
+            ouvrez l'application, pour effectuer la recherche des stations proches.
+        </li>
+    </ul>
+    <p>
+        Cette donnée est utilisée <strong>exclusivement en local sur votre appareil</strong> pour
+        construire la requête envoyée à l'API publique du gouvernement. Elle n'est ni
+        enregistrée, ni transmise à nos serveurs, ni partagée avec qui que ce soit.
+    </p>
+
+    <h2>3. Données NON collectées</h2>
+    <p>CarbuCheap ne collecte, ne stocke et ne transmet pas :</p>
+    <ul>
+        <li>Nom, prénom, adresse e-mail ou numéro de téléphone</li>
+        <li>Identifiant publicitaire de l'appareil</li>
+        <li>Historique de localisation ou de navigation dans l'app</li>
+        <li>Données financières ou de paiement</li>
+        <li>Tout autre identifiant personnel</li>
+    </ul>
+
+    <h2>4. Tiers et API utilisées</h2>
+    <p>
+        L'application interroge l'API officielle du gouvernement français pour récupérer les
+        prix des carburants :
+    </p>
+    <ul>
+        <li>
+            <strong>data.economie.gouv.fr</strong> — Prix des carburants en France
+            (flux instantané v2). Cette API est publique, gratuite et sous
+            <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">licence Open Database License (ODbL)</a>.
+            <br>
+            La requête envoyée contient uniquement vos coordonnées GPS (latitude, longitude)
+            et le type de carburant sélectionné. Aucun identifiant personnel n'est inclus.
+        </li>
+    </ul>
+    <p>
+        Aucune autre API, SDK de publicité, outil d'analyse (analytics) ou service tiers
+        n'est intégré dans l'application.
+    </p>
+
+    <h2>5. Stockage local (cache)</h2>
+    <p>
+        Pour améliorer les performances, les résultats de recherche sont stockés temporairement
+        en mémoire vive de l'appareil (cache en RAM) pendant 15 minutes maximum.
+        Ces données sont automatiquement supprimées à la fermeture de l'application.
+        Aucun fichier n'est écrit dans le stockage permanent de votre appareil.
+    </p>
+
+    <h2>6. Permissions Android requises</h2>
+    <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px;">
+        <thead>
+            <tr style="background: #f5f5f5;">
+                <th style="text-align:left; padding: 8px 12px; border: 1px solid #ddd;">Permission</th>
+                <th style="text-align:left; padding: 8px 12px; border: 1px solid #ddd;">Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;"><code>ACCESS_FINE_LOCATION</code></td>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;">Obtenir la position GPS précise pour trouver les stations proches</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;"><code>ACCESS_COARSE_LOCATION</code></td>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;">Fallback si le GPS précis est indisponible (position réseau)</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;"><code>INTERNET</code></td>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;">Accès à l'API gouvernementale des prix carburants</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>7. Enfants</h2>
+    <p>
+        CarbuCheap n'est pas destinée aux enfants de moins de 13 ans et ne collecte
+        sciemment aucune donnée de mineurs.
+    </p>
+
+    <h2>8. Modifications de cette politique</h2>
+    <p>
+        En cas de modification substantielle de cette politique, la date de mise à jour
+        en haut de cette page sera actualisée. L'utilisation continue de l'application
+        après modification vaut acceptation des nouvelles conditions.
+    </p>
+
+    <h2>9. Contact</h2>
+    <p>
+        Pour toute question relative à la confidentialité, vous pouvez ouvrir un ticket
+        dans le dépôt GitHub du projet ou contacter le développeur via la fiche Google Play.
+    </p>
+
+    <footer>
+        <p>© 2026 CarbuCheap &mdash; Données source : <a href="https://data.economie.gouv.fr" target="_blank" rel="noopener">data.economie.gouv.fr</a> &mdash; Licence ODbL.</p>
+    </footer>
+
+</body>
+</html>

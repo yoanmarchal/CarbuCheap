@@ -54,6 +54,7 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val selectedFuel by viewModel.selectedFuelType.collectAsState()
     val selectedRadius by viewModel.selectedRadius.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -121,7 +122,6 @@ fun DashboardScreen(
                     if (state.stations.isEmpty()) {
                         EmptyContent()
                     } else {
-                        val isRefreshing = false
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,
                             onRefresh = { viewModel.refresh() },

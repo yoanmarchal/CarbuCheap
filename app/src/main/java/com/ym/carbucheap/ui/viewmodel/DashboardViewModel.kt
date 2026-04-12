@@ -31,6 +31,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _selectedFuelType = MutableStateFlow(FuelType.SP95)
     val selectedFuelType: StateFlow<FuelType> = _selectedFuelType.asStateFlow()
 
@@ -90,7 +93,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun refresh() {
-        loadStations(forceRefresh = true)
+        val lat = lastLat
+        val lon = lastLon
+        if (lat != null && lon != null) {
+            viewModelScope.launch {
+                _isRefreshing.value = true
+                fetchStations(lat, lon, _selectedFuelType.value, _selectedRadius.value, forceRefresh = true)
+                _isRefreshing.value = false
+            }
+        } else {
+            loadStations(forceRefresh = true)
+        }
     }
 
     private suspend fun fetchStations(
