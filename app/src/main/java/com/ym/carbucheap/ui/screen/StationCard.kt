@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,12 +42,20 @@ fun StationCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = if (position == 0) {
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = Color.White
             )
         } else {
             CardDefaults.cardColors()
         }
     ) {
+        val isHighlighted = position == 0
+        val subtextColor = if (isHighlighted) {
+            Color.White.copy(alpha = 0.7f)
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -57,12 +66,7 @@ fun StationCard(
             Icon(
                 imageVector = Icons.Filled.LocalGasStation,
                 contentDescription = null,
-                modifier = Modifier.size(36.dp),
-                tint = if (position == 0) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                modifier = Modifier.size(36.dp)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -83,7 +87,7 @@ fun StationCard(
                 Text(
                     text = "${station.postalCode} ${station.city}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = subtextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -96,18 +100,13 @@ fun StationCard(
                     Text(
                         text = FormatUtils.formatPrice(station.price),
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (position == 0) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
+                        fontWeight = FontWeight.Bold
                     )
 
                     Text(
                         text = FormatUtils.formatDistance(station.distance),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = subtextColor,
                         modifier = Modifier.align(Alignment.Bottom)
                     )
                 }
@@ -122,8 +121,7 @@ fun StationCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Navigation,
-                    contentDescription = "Naviguer",
-                    tint = MaterialTheme.colorScheme.primary
+                    contentDescription = "Naviguer"
                 )
             }
         }
