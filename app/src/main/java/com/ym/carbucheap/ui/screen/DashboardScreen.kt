@@ -133,7 +133,7 @@ fun DashboardScreen(
                             ) {
                                 itemsIndexed(
                                     items = state.stations,
-                                    key = { _, station -> station.id + station.price }
+                                    key = { _, station -> station.id }
                                 ) { index, station ->
                                     StationCard(
                                         station = station,

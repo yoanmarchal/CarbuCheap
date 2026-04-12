@@ -6,6 +6,7 @@ import com.ym.carbucheap.data.model.Station
 import com.ym.carbucheap.data.remote.FuelApiService
 import com.ym.carbucheap.util.DistanceUtils
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "FuelRepository"
 
@@ -18,7 +19,7 @@ class FuelRepository(private val api: FuelApiService) {
         val stations: List<Station>
     )
 
-    private val cache = mutableMapOf<String, CacheEntry>()
+    private val cache = ConcurrentHashMap<String, CacheEntry>()
 
     companion object {
         private const val CACHE_DURATION_MS = 15 * 60 * 1000L // 15 minutes

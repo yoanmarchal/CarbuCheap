@@ -1,8 +1,10 @@
 package com.ym.carbucheap.util
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 
 object IntentUtils {
 
@@ -17,14 +19,17 @@ object IntentUtils {
             setPackage("com.google.android.apps.maps")
         }
 
-        if (mapIntent.resolveActivity(context.packageManager) != null) {
+        try {
             context.startActivity(mapIntent)
-        } else {
+        } catch (e: ActivityNotFoundException) {
             // Fallback: generic geo intent (Waze, other nav apps)
             val geoUri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
             val fallbackIntent = Intent(Intent.ACTION_VIEW, geoUri)
-            context.startActivity(fallbackIntent)
+            try {
+                context.startActivity(fallbackIntent)
+            } catch (e2: ActivityNotFoundException) {
+                Toast.makeText(context, "Aucune application de navigation trouvée", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
-
