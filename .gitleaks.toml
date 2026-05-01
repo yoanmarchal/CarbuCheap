@@ -1,0 +1,8 @@
+title = "CarbuCheap gitleaks config"
+
+[allowlist]
+description = "Ignore local Android SDK path file"
+paths = [
+  '''(^|/)local\.properties$'''
+]
+

@@ -19,3 +19,26 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# --- Security: local secrets / signing material ---
+.env
+.env.*
+keystore.properties
+signing.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+
+# --- Release artifacts (do not version generated binaries) ---
+*.apk
+*.aab
+**/outputs/
+**/mapping/
+**/symbols/
+
+# --- Local logs / crash dumps ---
+*.log
+hs_err_pid*
+replay_pid*
