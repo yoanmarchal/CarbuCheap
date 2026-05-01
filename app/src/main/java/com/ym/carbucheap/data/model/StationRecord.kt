@@ -5,32 +5,32 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = false)
 data class ApiResponse(
-    @Json(name = "total_count") val totalCount: Int?,
-    @Json(name = "results") val results: List<StationRecord>?
+    @param:Json(name = "total_count") val totalCount: Int?,
+    @param:Json(name = "results") val results: List<StationRecord>?
 )
 
 @JsonClass(generateAdapter = false)
 data class StationRecord(
-    @Json(name = "id") val id: Long?,
-    @Json(name = "adresse") val adresse: String?,
-    @Json(name = "ville") val ville: String?,
-    @Json(name = "cp") val cp: String?,
-    @Json(name = "geom") val geom: GeoPoint?,
-    @Json(name = "gazole_prix") val gazolePrix: Double?,
-    @Json(name = "gazole_maj") val gazoleMaj: String?,
-    @Json(name = "sp95_prix") val sp95Prix: Double?,
-    @Json(name = "sp95_maj") val sp95Maj: String?,
-    @Json(name = "sp98_prix") val sp98Prix: Double?,
-    @Json(name = "sp98_maj") val sp98Maj: String?,
-    @Json(name = "e85_prix") val e85Prix: Double?,
-    @Json(name = "e85_maj") val e85Maj: String?,
-    @Json(name = "e10_prix") val e10Prix: Double?,
-    @Json(name = "e10_maj") val e10Maj: String?,
-    @Json(name = "gplc_prix") val gplcPrix: Double?,
-    @Json(name = "gplc_maj") val gplcMaj: String?,
-    @Json(name = "carburants_disponibles") val carburantsDisponibles: List<String>?,
-    @Json(name = "services_service") val services: List<String>?,
-    @Json(name = "horaires_automate_24_24") val automate24: String?
+    @param:Json(name = "id") val id: Long?,
+    @param:Json(name = "adresse") val adresse: String?,
+    @param:Json(name = "ville") val ville: String?,
+    @param:Json(name = "cp") val cp: String?,
+    @param:Json(name = "geom") val geom: GeoPoint?,
+    @param:Json(name = "gazole_prix") val gazolePrix: Double?,
+    @param:Json(name = "gazole_maj") val gazoleMaj: String?,
+    @param:Json(name = "sp95_prix") val sp95Prix: Double?,
+    @param:Json(name = "sp95_maj") val sp95Maj: String?,
+    @param:Json(name = "sp98_prix") val sp98Prix: Double?,
+    @param:Json(name = "sp98_maj") val sp98Maj: String?,
+    @param:Json(name = "e85_prix") val e85Prix: Double?,
+    @param:Json(name = "e85_maj") val e85Maj: String?,
+    @param:Json(name = "e10_prix") val e10Prix: Double?,
+    @param:Json(name = "e10_maj") val e10Maj: String?,
+    @param:Json(name = "gplc_prix") val gplcPrix: Double?,
+    @param:Json(name = "gplc_maj") val gplcMaj: String?,
+    @param:Json(name = "carburants_disponibles") val carburantsDisponibles: List<String>?,
+    @param:Json(name = "services_service") val services: List<String>?,
+    @param:Json(name = "horaires_automate_24_24") val automate24: String?
 ) {
     fun getPriceForFuel(fuelType: FuelType): Double? = when (fuelType) {
         FuelType.GAZOLE -> gazolePrix
@@ -53,7 +53,7 @@ data class StationRecord(
 
 @JsonClass(generateAdapter = false)
 data class GeoPoint(
-    @Json(name = "lon") val lon: Double?,
-    @Json(name = "lat") val lat: Double?
+    @param:Json(name = "lon") val lon: Double?,
+    @param:Json(name = "lat") val lat: Double?
 )
 

@@ -3,22 +3,55 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+val releaseStoreFile = System.getenv("RELEASE_STORE_FILE")
+    ?: providers.gradleProperty("RELEASE_STORE_FILE").orNull
+val releaseStorePassword = System.getenv("RELEASE_STORE_PASSWORD")
+    ?: providers.gradleProperty("RELEASE_STORE_PASSWORD").orNull
+val releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")
+    ?: providers.gradleProperty("RELEASE_KEY_ALIAS").orNull
+val releaseKeyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+    ?: providers.gradleProperty("RELEASE_KEY_PASSWORD").orNull
+
+val hasReleaseSigning = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.ym.carbucheap"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.ym.carbucheap"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 37
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -27,17 +60,23 @@ android {
             )
         }
     }
+    packaging {
+        jniLibs {
+            keepDebugSymbols += "**/*.so"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlin {
-        jvmToolchain(11)
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
+}
+
+kotlin {
+    jvmToolchain(11)
 }
 
 dependencies {

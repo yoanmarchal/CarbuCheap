@@ -16,9 +16,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,23 +37,30 @@ fun StationCard(
     onNavigateClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isHighlighted = position == 0
+    val isDarkTheme = isSystemInDarkTheme()
+    val highlightedContentColor = if (isDarkTheme) {
+        Color.White
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = if (position == 0) {
+        colors = if (isHighlighted) {
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = Color.White
+                contentColor = highlightedContentColor
             )
         } else {
             CardDefaults.cardColors()
         }
     ) {
-        val isHighlighted = position == 0
         val subtextColor = if (isHighlighted) {
-            Color.White.copy(alpha = 0.7f)
+            highlightedContentColor.copy(alpha = 0.78f)
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         }
@@ -117,7 +126,19 @@ fun StationCard(
             // Navigation button
             FilledTonalIconButton(
                 onClick = onNavigateClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
+                colors = if (isHighlighted) {
+                    IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = if (isDarkTheme) {
+                            Color.White.copy(alpha = 0.2f)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+                        },
+                        contentColor = highlightedContentColor
+                    )
+                } else {
+                    IconButtonDefaults.filledTonalIconButtonColors()
+                }
             ) {
                 Icon(
                     imageVector = Icons.Filled.Navigation,
