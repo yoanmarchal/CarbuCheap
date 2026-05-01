@@ -34,6 +34,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Lint + tests + debug build
         run: ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
 
@@ -67,4 +70,5 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
