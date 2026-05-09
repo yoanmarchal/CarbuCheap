@@ -60,7 +60,7 @@ fun StationCard(
         }
     ) {
         val subtextColor = if (isHighlighted) {
-            highlightedContentColor.copy(alpha = 0.78f)
+            highlightedContentColor.copy(alpha = 1f)
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         }
@@ -126,7 +126,8 @@ fun StationCard(
             // Navigation button
             FilledTonalIconButton(
                 onClick = onNavigateClick,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier
+                    .size(44.dp), // Slightly smaller to ensure it fits in tight layouts
                 colors = if (isHighlighted) {
                     IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = if (isDarkTheme) {
@@ -142,7 +143,7 @@ fun StationCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Navigation,
-                    contentDescription = "Naviguer"
+                    contentDescription = "Naviguer vers ${station.address}"
                 )
             }
         }

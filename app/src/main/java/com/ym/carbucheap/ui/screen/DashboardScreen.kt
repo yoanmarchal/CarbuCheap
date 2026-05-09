@@ -48,6 +48,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.ym.carbucheap.data.model.FuelType
@@ -236,6 +238,13 @@ private fun FuelTypeSelector(
                         fontWeight = if (fuelType == selectedFuel) FontWeight.Bold else FontWeight.Normal
                     )
                 },
+                modifier = Modifier.semantics {
+                    contentDescription = if (fuelType == selectedFuel) {
+                        "Carburant ${fuelType.displayName} sélectionné"
+                    } else {
+                        "Sélectionner le carburant ${fuelType.displayName}"
+                    }
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -264,9 +273,12 @@ private fun RadiusSelector(
                 label = {
                     Text(
                         text = "${radius} km",
-                        fontWeight = if (radius == selectedRadius) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (radius == selectedRadius) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 },
+                leadingIcon = null,
+                trailingIcon = null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.secondary,
                     selectedLabelColor = MaterialTheme.colorScheme.onSecondary
