@@ -69,7 +69,21 @@ Téléchargez CarbuCheap gratuitement et faites des économies dès aujourd'hui.
 
 ---
 
-## Notes de version — v1.0 (Nouveautés)
+## Notes de version — v1.1 (Nouveautés)
+
+```
+🎨 Interface entièrement repensée Material Design 3
+
+• Animations fluides entre les écrans (spring physics)
+• Meilleure accessibilité : lecteur d'écran amélioré
+• Performance : l'app se met en pause correctement en arrière-plan
+• Navigation interne modernisée
+• Corrections visuelles mode clair et mode sombre
+```
+
+---
+
+## Notes de version — v1.0 (Première version)
 
 ```
 Première version de CarbuCheap !
@@ -196,4 +210,4 @@ Options d'hébergement gratuites :
 - [ ] Questionnaire IARC (Content Rating) complété → "Tout public"
 - [ ] Pays de distribution : France (ou monde entier)
 - [ ] Prix : Gratuit
-- [ ] `versionCode = 1`, `versionName = "1.0"` dans `app/build.gradle.kts` ✓
+- [ ] `versionCode = 4`, `versionName = "1.1.0"` dans `app/build.gradle.kts` ✓
