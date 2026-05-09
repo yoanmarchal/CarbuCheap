@@ -46,7 +46,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.ym.carbucheap.data.model.FuelType
+import com.ym.carbucheap.data.model.Station
+import com.ym.carbucheap.ui.theme.CarbuCheapTheme
 import com.ym.carbucheap.ui.viewmodel.DashboardUiState
 import com.ym.carbucheap.ui.viewmodel.DashboardViewModel
 import com.ym.carbucheap.util.IntentUtils
@@ -60,15 +63,41 @@ fun DashboardScreen(
     val selectedFuel by viewModel.selectedFuelType.collectAsState()
     val selectedRadius by viewModel.selectedRadius.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-    val context = LocalContext.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     LaunchedEffect(Unit) {
         viewModel.loadStations()
     }
 
+    DashboardContent(
+        uiState = uiState,
+        selectedFuel = selectedFuel,
+        selectedRadius = selectedRadius,
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refresh() },
+        onRetry = { viewModel.loadStations() },
+        onFuelSelected = { viewModel.selectFuelType(it) },
+        onRadiusSelected = { viewModel.selectRadius(it) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DashboardContent(
+    uiState: DashboardUiState,
+    selectedFuel: FuelType,
+    selectedRadius: Int,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    onRetry: () -> Unit,
+    onFuelSelected: (FuelType) -> Unit,
+    onRadiusSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets.safeDrawing.only(
@@ -86,7 +115,7 @@ fun DashboardScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
+                    IconButton(onClick = onRefresh) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Actualiser"
@@ -110,13 +139,13 @@ fun DashboardScreen(
             // Fuel type selector
             FuelTypeSelector(
                 selectedFuel = selectedFuel,
-                onFuelSelected = { viewModel.selectFuelType(it) }
+                onFuelSelected = onFuelSelected
             )
 
             // Radius selector
             RadiusSelector(
                 selectedRadius = selectedRadius,
-                onRadiusSelected = { viewModel.selectRadius(it) }
+                onRadiusSelected = onRadiusSelected
             )
 
             // Content
@@ -128,7 +157,7 @@ fun DashboardScreen(
                 is DashboardUiState.Error -> {
                     ErrorContent(
                         message = state.message,
-                        onRetry = { viewModel.loadStations() }
+                        onRetry = onRetry
                     )
                 }
 
@@ -138,7 +167,7 @@ fun DashboardScreen(
                     } else {
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,
-                            onRefresh = { viewModel.refresh() },
+                            onRefresh = onRefresh,
                             modifier = Modifier.fillMaxSize()
                         ) {
                             LazyColumn(
@@ -314,5 +343,65 @@ private fun EmptyContent() {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DashboardScreenPreview() {
+    CarbuCheapTheme {
+        DashboardContent(
+            uiState = DashboardUiState.Success(
+                stations = listOf(
+                    Station(
+                        id = "1",
+                        name = "Station Total",
+                        address = "123 Rue de la Pompe",
+                        city = "Paris",
+                        postalCode = "75001",
+                        latitude = 48.8566,
+                        longitude = 2.3522,
+                        price = 1.859,
+                        fuelType = "Gazole",
+                        distance = 1.2,
+                        lastUpdate = "2023-10-27T10:00:00Z"
+                    ),
+                    Station(
+                        id = "2",
+                        name = "Station Leclerc",
+                        address = "456 Avenue du Garage",
+                        city = "Paris",
+                        postalCode = "75002",
+                        latitude = 48.8666,
+                        longitude = 2.3622,
+                        price = 1.899,
+                        fuelType = "Gazole",
+                        distance = 2.5,
+                        lastUpdate = "2023-10-27T11:00:00Z"
+                    ),
+                    Station(
+                        id = "3",
+                        name = "Station Esso",
+                        address = "789 Boulevard du Carburant",
+                        city = "Paris",
+                        postalCode = "75003",
+                        latitude = 48.8766,
+                        longitude = 2.3722,
+                        price = 1.929,
+                        fuelType = "Gazole",
+                        distance = 3.8,
+                        lastUpdate = "2023-10-27T12:00:00Z"
+                    )
+                ),
+                selectedFuel = FuelType.GAZOLE
+            ),
+            selectedFuel = FuelType.GAZOLE,
+            selectedRadius = 10,
+            isRefreshing = false,
+            onRefresh = {},
+            onRetry = {},
+            onFuelSelected = {},
+            onRadiusSelected = {}
+        )
     }
 }

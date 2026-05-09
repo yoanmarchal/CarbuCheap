@@ -10,6 +10,8 @@
 /.idea/deploymentTargetSelector.xml
 /.idea/deviceManager.xml
 /.idea/appInsightsSettings.xml
+/.idea/misc.xml
+/.idea/inspectionProfiles/Project_Default.xml
 /.idea/copilot*.xml
 /.idea/studiobot.xml
 /.idea/markdown.xml
