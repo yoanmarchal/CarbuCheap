@@ -51,7 +51,9 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
             ndk {
-                debugSymbolLevel = "SYMBOL_TABLE"
+                // FULL = extrait les symboles de debug complets des .so (libs tierces incluses)
+                // Améliore l'analyse de crash dans Play Console / Android Vitals
+                debugSymbolLevel = "FULL"
             }
             isMinifyEnabled = true
             isShrinkResources = true
