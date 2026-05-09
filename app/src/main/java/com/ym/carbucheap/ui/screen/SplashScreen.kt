@@ -69,13 +69,16 @@ fun SplashScreen(
         }
     }
 
+    // Démarre à 0f et passe à 1f au premier frame pour déclencher l'animation
+    var alphaTarget by remember { mutableStateOf(0f) }
     val alphaAnim by animateFloatAsState(
-        targetValue = 1f,
+        targetValue = alphaTarget,
         animationSpec = tween(durationMillis = 800),
         label = "splash_alpha"
     )
 
     LaunchedEffect(Unit) {
+        alphaTarget = 1f // déclenche le fondu entrant
         if (!permissionRequested) {
             permissionRequested = true
             permissionLauncher.launch(

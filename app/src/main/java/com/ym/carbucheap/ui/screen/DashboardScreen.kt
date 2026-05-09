@@ -37,9 +37,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -69,10 +69,10 @@ private val RADIUS_OPTIONS = listOf(5, 10, 20, 30, 50)
 fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val selectedFuel by viewModel.selectedFuelType.collectAsState()
-    val selectedRadius by viewModel.selectedRadius.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val selectedFuel by viewModel.selectedFuelType.collectAsStateWithLifecycle()
+    val selectedRadius by viewModel.selectedRadius.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     DashboardContent(
         uiState = uiState,
@@ -255,14 +255,12 @@ private fun RadiusSelector(
     selectedRadius: Int,
     onRadiusSelected: (Int) -> Unit
 ) {
-    val radiusOptions = RADIUS_OPTIONS
-
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(radiusOptions) { radius ->
+        items(RADIUS_OPTIONS) { radius ->
             FilterChip(
                 selected = radius == selectedRadius,
                 onClick = { onRadiusSelected(radius) },

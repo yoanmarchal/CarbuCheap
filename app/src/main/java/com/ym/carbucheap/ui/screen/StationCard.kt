@@ -116,7 +116,7 @@ fun StationCard(
             // Navigation button
             FilledTonalIconButton(
                 onClick = onNavigateClick,
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp), // MD3 minimum touch target
                 colors = if (isHighlighted) {
                     IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = colors.secondaryContainer,
