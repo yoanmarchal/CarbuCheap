@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val releaseStoreFile = System.getenv("RELEASE_STORE_FILE")
@@ -117,6 +118,9 @@ dependencies {
 
     // DataStore
     implementation(libs.datastore.preferences)
+
+    // Serialization (routes type-safe Navigation Compose)
+    implementation(libs.kotlinx.serialization.json)
 
     // Test
     testImplementation(libs.junit)

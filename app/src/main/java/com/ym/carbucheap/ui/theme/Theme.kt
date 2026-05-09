@@ -4,6 +4,8 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -85,6 +87,11 @@ fun CarbuCheapTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
-    )
+        shapes = Shapes(), // Shapes MD3 par défaut (extra-small=4dp → full=9999dp)
+    ) {
+        // Surface fournit la couleur de fond MD3 et propage contentColor correctement
+        Surface(color = MaterialTheme.colorScheme.background) {
+            content()
+        }
+    }
 }

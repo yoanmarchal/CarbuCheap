@@ -42,7 +42,8 @@ fun StationCard(
     // au thème clair ET sombre — pas besoin de isSystemInDarkTheme()
     val cardContainerColor = if (isHighlighted) colors.primaryContainer else colors.surfaceContainerLow
     val cardContentColor   = if (isHighlighted) colors.onPrimaryContainer else colors.onSurface
-    val subtextColor       = if (isHighlighted) colors.onPrimaryContainer.copy(alpha = 0.75f) else colors.onSurfaceVariant
+    // onPrimaryContainer pour texte secondaire sur card primaire (ne pas réduire alpha = anti-pattern MD3)
+    val subtextColor       = if (isHighlighted) colors.onPrimaryContainer else colors.onSurfaceVariant
 
     Card(
         modifier = modifier

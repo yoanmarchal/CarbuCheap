@@ -1,5 +1,11 @@
 package com.ym.carbucheap.ui.screen
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +44,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -123,7 +128,7 @@ private fun DashboardContent(
                         )
                         Text(
                             text = "CarbuCheap",
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -162,8 +167,22 @@ private fun DashboardContent(
                 onRadiusSelected = onRadiusSelected
             )
 
-            // Content
-            when (val state = uiState) {
+            // Content — AnimatedContent pour transitions fluides entre états (MD3 motion)
+            AnimatedContent(
+                targetState = uiState,
+                transitionSpec = {
+                    (fadeIn(animationSpec = spring(stiffness = 300f, dampingRatio = 0.8f)) +
+                        slideInVertically(
+                            animationSpec = spring(stiffness = 300f, dampingRatio = 0.8f)
+                        ) { it / 10 })
+                        .togetherWith(
+                            fadeOut(animationSpec = spring(stiffness = 300f, dampingRatio = 0.8f))
+                        )
+                },
+                label = "dashboard_state_transition",
+                modifier = Modifier.fillMaxSize()
+            ) { state ->
+            when (state) {
                 is DashboardUiState.Loading -> {
                     LoadingContent()
                 }
@@ -210,6 +229,7 @@ private fun DashboardContent(
                     }
                 }
             }
+            } // end AnimatedContent
         }
     }
 }
@@ -285,12 +305,13 @@ private fun RadiusSelector(
 @Composable
 private fun LoadingContent() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .semantics { contentDescription = "Chargement en cours" },
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -318,7 +339,7 @@ private fun ErrorContent(
         ) {
             Icon(
                 imageVector = Icons.Filled.ErrorOutline,
-                contentDescription = null,
+                contentDescription = "Erreur",
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.error
             )

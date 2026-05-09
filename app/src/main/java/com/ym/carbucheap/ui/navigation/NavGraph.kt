@@ -8,10 +8,15 @@ import androidx.navigation.compose.rememberNavController
 import com.ym.carbucheap.ui.screen.DashboardScreen
 import com.ym.carbucheap.ui.screen.SplashScreen
 import com.ym.carbucheap.ui.viewmodel.DashboardViewModel
+import kotlinx.serialization.Serializable
 
-object Routes {
-    const val SPLASH = "splash"
-    const val DASHBOARD = "dashboard"
+// Routes type-safe — Navigation Compose 2.8+ (kotlinx.serialization)
+sealed interface Route {
+    @Serializable
+    data object Splash : Route
+
+    @Serializable
+    data object Dashboard : Route
 }
 
 @Composable
@@ -21,21 +26,20 @@ fun NavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.SPLASH
+        startDestination = Route.Splash
     ) {
-        composable(Routes.SPLASH) {
+        composable<Route.Splash> {
             SplashScreen(
                 onPermissionGranted = {
-                    navController.navigate(Routes.DASHBOARD) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    navController.navigate(Route.Dashboard) {
+                        popUpTo<Route.Splash> { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Routes.DASHBOARD) {
+        composable<Route.Dashboard> {
             DashboardScreen(viewModel = viewModel)
         }
     }
 }
-
