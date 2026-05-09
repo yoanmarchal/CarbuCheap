@@ -9,9 +9,11 @@ import com.ym.carbucheap.data.model.FuelType
 import com.ym.carbucheap.data.model.Station
 import com.ym.carbucheap.data.remote.RetrofitInstance
 import com.ym.carbucheap.data.repository.FuelRepository
+import com.ym.carbucheap.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 sealed class DashboardUiState {
@@ -27,6 +29,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val repository = FuelRepository(RetrofitInstance.api)
     private val locationProvider = LocationProvider(application)
+    private val preferencesRepository = UserPreferencesRepository(application)
 
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
@@ -42,6 +45,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private var lastLat: Double? = null
     private var lastLon: Double? = null
+
+    init {
+        viewModelScope.launch {
+            val savedPrefs = preferencesRepository.userPreferencesFlow.first()
+            _selectedFuelType.value = savedPrefs.fuelType
+            _selectedRadius.value = savedPrefs.radiusKm
+            Log.d("DashboardVM", "Préférences restaurées : carburant=${savedPrefs.fuelType}, rayon=${savedPrefs.radiusKm} km")
+            loadStations()
+        }
+    }
 
     fun loadStations(forceRefresh: Boolean = false) {
         viewModelScope.launch {
@@ -66,6 +79,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun selectFuelType(fuelType: FuelType) {
         _selectedFuelType.value = fuelType
+        viewModelScope.launch {
+            preferencesRepository.saveFuelType(fuelType)
+        }
         val lat = lastLat
         val lon = lastLon
         if (lat != null && lon != null) {
@@ -80,6 +96,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun selectRadius(radiusKm: Int) {
         _selectedRadius.value = radiusKm
+        viewModelScope.launch {
+            preferencesRepository.saveRadius(radiusKm)
+        }
         val lat = lastLat
         val lon = lastLon
         if (lat != null && lon != null) {
@@ -129,4 +148,3 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         )
     }
 }
-

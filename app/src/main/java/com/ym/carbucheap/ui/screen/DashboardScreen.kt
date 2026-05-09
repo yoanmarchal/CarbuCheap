@@ -37,9 +37,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -60,6 +60,10 @@ import com.ym.carbucheap.ui.viewmodel.DashboardViewModel
 import com.ym.carbucheap.util.IntentUtils
 import com.ym.carbucheap.R
 
+// Listes stables extraites au top-level pour éviter les ré-allocations à chaque recomposition
+private val FUEL_TYPE_LIST = FuelType.entries.toList()
+private val RADIUS_OPTIONS = listOf(5, 10, 20, 30, 50)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -69,10 +73,6 @@ fun DashboardScreen(
     val selectedFuel by viewModel.selectedFuelType.collectAsState()
     val selectedRadius by viewModel.selectedRadius.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadStations()
-    }
 
     DashboardContent(
         uiState = uiState,
@@ -119,11 +119,7 @@ private fun DashboardContent(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
-
-                            tint = if (MaterialTheme.colorScheme.primary == androidx.compose.ui.graphics.Color.White)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "CarbuCheap",
@@ -228,7 +224,7 @@ private fun FuelTypeSelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(FuelType.entries.toList()) { fuelType ->
+        items(FUEL_TYPE_LIST) { fuelType ->
             FilterChip(
                 selected = fuelType == selectedFuel,
                 onClick = { onFuelSelected(fuelType) },
@@ -259,7 +255,7 @@ private fun RadiusSelector(
     selectedRadius: Int,
     onRadiusSelected: (Int) -> Unit
 ) {
-    val radiusOptions = listOf(5, 10, 20, 30, 50)
+    val radiusOptions = RADIUS_OPTIONS
 
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),

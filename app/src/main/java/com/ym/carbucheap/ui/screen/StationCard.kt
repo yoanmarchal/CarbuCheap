@@ -20,10 +20,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,44 +36,35 @@ fun StationCard(
     modifier: Modifier = Modifier
 ) {
     val isHighlighted = position == 0
-    val isDarkTheme = isSystemInDarkTheme()
-    val highlightedContentColor = if (isDarkTheme) {
-        Color.White
-    } else {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    }
+    val colors = MaterialTheme.colorScheme
+
+    // Les tokens MD3 primaryContainer/onPrimaryContainer s'adaptent automatiquement
+    // au thème clair ET sombre — pas besoin de isSystemInDarkTheme()
+    val cardContainerColor = if (isHighlighted) colors.primaryContainer else colors.surfaceContainerLow
+    val cardContentColor   = if (isHighlighted) colors.onPrimaryContainer else colors.onSurface
+    val subtextColor       = if (isHighlighted) colors.onPrimaryContainer.copy(alpha = 0.75f) else colors.onSurfaceVariant
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = if (isHighlighted) {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = highlightedContentColor
-            )
-        } else {
-            CardDefaults.cardColors()
-        }
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isHighlighted) 3.dp else 1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = cardContainerColor,
+            contentColor   = cardContentColor
+        )
     ) {
-        val subtextColor = if (isHighlighted) {
-            highlightedContentColor.copy(alpha = 1f)
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Fuel icon
             Icon(
                 imageVector = Icons.Filled.LocalGasStation,
                 contentDescription = null,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(36.dp),
+                tint = if (isHighlighted) cardContentColor else colors.primary
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -109,7 +98,8 @@ fun StationCard(
                     Text(
                         text = FormatUtils.formatPrice(station.price),
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = if (isHighlighted) cardContentColor else colors.tertiary
                     )
 
                     Text(
@@ -126,16 +116,11 @@ fun StationCard(
             // Navigation button
             FilledTonalIconButton(
                 onClick = onNavigateClick,
-                modifier = Modifier
-                    .size(44.dp), // Slightly smaller to ensure it fits in tight layouts
+                modifier = Modifier.size(44.dp),
                 colors = if (isHighlighted) {
                     IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = if (isDarkTheme) {
-                            Color.White.copy(alpha = 0.2f)
-                        } else {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-                        },
-                        contentColor = highlightedContentColor
+                        containerColor = colors.secondaryContainer,
+                        contentColor   = colors.onSecondaryContainer
                     )
                 } else {
                     IconButtonDefaults.filledTonalIconButtonColors()

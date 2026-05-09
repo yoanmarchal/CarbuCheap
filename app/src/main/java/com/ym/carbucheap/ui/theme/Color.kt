@@ -21,4 +21,3 @@ val Green200Dark = Color(0xFF81C784)
 val Green700Dark = Color(0xFF2E7D32)
 val SurfaceDark = Color(0xFF1C1C1E)
 val OnSurfaceDark = Color(0xFFE6E1E5)
-

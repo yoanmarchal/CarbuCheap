@@ -115,6 +115,9 @@ dependencies {
     // Splash
     implementation(libs.splashscreen)
 
+    // DataStore
+    implementation(libs.datastore.preferences)
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
