@@ -3,6 +3,7 @@ package com.ym.carbucheap.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,11 +41,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.ym.carbucheap.data.model.FuelType
@@ -53,6 +56,7 @@ import com.ym.carbucheap.ui.theme.CarbuCheapTheme
 import com.ym.carbucheap.ui.viewmodel.DashboardUiState
 import com.ym.carbucheap.ui.viewmodel.DashboardViewModel
 import com.ym.carbucheap.util.IntentUtils
+import com.ym.carbucheap.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,10 +113,22 @@ private fun DashboardContent(
                     WindowInsetsSides.Top + WindowInsetsSides.Horizontal
                 ),
                 title = {
-                    Text(
-                        text = "⛽ CarbuCheap",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+
+                            tint = if (MaterialTheme.colorScheme.primary == androidx.compose.ui.graphics.Color.White)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "CarbuCheap",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = onRefresh) {
