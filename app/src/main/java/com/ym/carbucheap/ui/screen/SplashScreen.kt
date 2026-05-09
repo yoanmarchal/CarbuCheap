@@ -8,7 +8,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -70,11 +72,14 @@ fun SplashScreen(
         }
     }
 
-    // Démarre à 0f et passe à 1f au premier frame pour déclencher l'animation
+    // Spring physics pour le fondu entrant — conforme MD3 Expressive motion
     var alphaTarget by remember { mutableStateOf(0f) }
     val alphaAnim by animateFloatAsState(
         targetValue = alphaTarget,
-        animationSpec = tween(durationMillis = 800),
+        animationSpec = spring(
+            dampingRatio = 0.8f,  // légèrement amorti, sans rebond excessif
+            stiffness = 200f      // Emphasized decelerate feel
+        ),
         label = "splash_alpha"
     )
 
@@ -178,7 +183,9 @@ fun SplashScreen(
             }
         } else {
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary
+                modifier = Modifier.semantics {
+                    contentDescription = "Chargement en cours"
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
