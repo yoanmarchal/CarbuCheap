@@ -2,6 +2,8 @@ package com.ym.carbucheap.util
 
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
 import java.util.Locale
@@ -27,12 +29,22 @@ object FormatUtils {
         }
     }
 
-    /** Parses API timestamps such as "2026-11-12T06:55:20+00:00". */
+    /** Parses API timestamps: "2026-11-12T06:55:20+00:00" or a plain date "2026-10-30" (read as UTC midnight). */
     fun parseUpdate(iso: String): Instant? = try {
-        if (iso.isBlank()) null else OffsetDateTime.parse(iso).toInstant()
+        when {
+            iso.isBlank() -> null
+            iso.length == 10 -> LocalDate.parse(iso).atStartOfDay(ZoneOffset.UTC).toInstant()
+            else -> OffsetDateTime.parse(iso).toInstant()
+        }
     } catch (e: DateTimeParseException) {
         null
     }
+
+    fun formatPower(kw: Double): String =
+        if (kw % 1.0 == 0.0) "${kw.toInt()} kW" else String.format(Locale.FRANCE, "%.1f kW", kw)
+
+    fun formatPricePerKwh(price: Double): String =
+        String.format(Locale.FRANCE, "%.2f €/kWh", price)
 
     /** "MAJ il y a 3 h" style label, or null when the date is unknown. */
     fun formatUpdateAge(iso: String, now: Instant = Instant.now()): String? {

@@ -28,6 +28,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.EvStation
+import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +40,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -61,7 +66,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import com.ym.carbucheap.data.model.Connector
 import com.ym.carbucheap.data.model.FuelType
+import com.ym.carbucheap.data.repository.EnergyMode
 import com.ym.carbucheap.data.model.Station
 import com.ym.carbucheap.ui.theme.CarbuCheapTheme
 import com.ym.carbucheap.ui.viewmodel.DashboardUiState
@@ -73,6 +80,8 @@ import com.ym.carbucheap.R
 // Listes stables extraites au top-level pour éviter les ré-allocations à chaque recomposition
 private val FUEL_TYPE_LIST = FuelType.entries.toList()
 private val RADIUS_OPTIONS = listOf(5, 10, 20, 30, 50)
+private val CONNECTOR_LIST = Connector.entries.filter { it != Connector.DOMESTIC }
+private val MIN_POWER_OPTIONS = listOf(0, 22, 50, 150)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,9 +92,18 @@ fun DashboardScreen(
     val selectedFuel by viewModel.selectedFuelType.collectAsStateWithLifecycle()
     val selectedRadius by viewModel.selectedRadius.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val mode by viewModel.mode.collectAsStateWithLifecycle()
+    val selectedConnector by viewModel.selectedConnector.collectAsStateWithLifecycle()
+    val minPowerKw by viewModel.minPowerKw.collectAsStateWithLifecycle()
 
     DashboardContent(
         uiState = uiState,
+        mode = mode,
+        selectedConnector = selectedConnector,
+        minPowerKw = minPowerKw,
+        onModeSelected = { viewModel.selectMode(it) },
+        onConnectorToggled = { viewModel.toggleConnector(it) },
+        onMinPowerSelected = { viewModel.selectMinPower(it) },
         selectedFuel = selectedFuel,
         selectedRadius = selectedRadius,
         isRefreshing = isRefreshing,
@@ -100,6 +118,12 @@ fun DashboardScreen(
 @Composable
 private fun DashboardContent(
     uiState: DashboardUiState,
+    mode: EnergyMode,
+    selectedConnector: Connector?,
+    minPowerKw: Int,
+    onModeSelected: (EnergyMode) -> Unit,
+    onConnectorToggled: (Connector) -> Unit,
+    onMinPowerSelected: (Int) -> Unit,
     selectedFuel: FuelType,
     selectedRadius: Int,
     isRefreshing: Boolean,
@@ -160,11 +184,20 @@ private fun DashboardContent(
                 .consumeWindowInsets(paddingValues)
                 .padding(paddingValues)
         ) {
-            // Fuel type selector
-            FuelTypeSelector(
-                selectedFuel = selectedFuel,
-                onFuelSelected = onFuelSelected
-            )
+            ModeSelector(mode = mode, onModeSelected = onModeSelected)
+
+            when (mode) {
+                EnergyMode.FUEL -> FuelTypeSelector(
+                    selectedFuel = selectedFuel,
+                    onFuelSelected = onFuelSelected
+                )
+                EnergyMode.ELECTRIC -> ChargingFilters(
+                    selectedConnector = selectedConnector,
+                    minPowerKw = minPowerKw,
+                    onConnectorToggled = onConnectorToggled,
+                    onMinPowerSelected = onMinPowerSelected
+                )
+            }
 
             // Radius selector
             RadiusSelector(
@@ -197,6 +230,43 @@ private fun DashboardContent(
                         message = state.message,
                         onRetry = onRetry
                     )
+                }
+
+                is DashboardUiState.ChargingSuccess -> {
+                    if (state.stations.isEmpty()) {
+                        EmptyContent(
+                            emoji = "🔌",
+                            message = "Aucune borne trouvée avec ces critères.\nEssayez d'élargir le rayon ou de retirer un filtre."
+                        )
+                    } else {
+                        PullToRefreshBox(
+                            isRefreshing = isRefreshing,
+                            onRefresh = onRefresh,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            LazyColumn(
+                                contentPadding = PaddingValues(vertical = 8.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = state.stations,
+                                    key = { it.id }
+                                ) { station ->
+                                    ChargingStationCard(
+                                        station = station,
+                                        onNavigateClick = {
+                                            IntentUtils.openNavigation(
+                                                context = context,
+                                                latitude = station.latitude,
+                                                longitude = station.longitude,
+                                                label = station.name
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 is DashboardUiState.Success -> {
@@ -254,6 +324,93 @@ private fun DashboardContent(
                 }
             }
             } // end AnimatedContent
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModeSelector(
+    mode: EnergyMode,
+    onModeSelected: (EnergyMode) -> Unit
+) {
+    val options = listOf(
+        Triple(EnergyMode.FUEL, "Carburant", Icons.Filled.LocalGasStation),
+        Triple(EnergyMode.ELECTRIC, "Électrique", Icons.Filled.EvStation)
+    )
+    SingleChoiceSegmentedButtonRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        options.forEachIndexed { index, (value, label, icon) ->
+            SegmentedButton(
+                selected = mode == value,
+                onClick = { onModeSelected(value) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                icon = {
+                    SegmentedButtonDefaults.Icon(active = mode == value) {
+                        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                    }
+                },
+                label = { Text(label) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChargingFilters(
+    selectedConnector: Connector?,
+    minPowerKw: Int,
+    onConnectorToggled: (Connector) -> Unit,
+    onMinPowerSelected: (Int) -> Unit
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(CONNECTOR_LIST) { connector ->
+            val selected = connector == selectedConnector
+            FilterChip(
+                selected = selected,
+                onClick = { onConnectorToggled(connector) },
+                label = {
+                    Text(
+                        text = connector.displayName,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                    )
+                },
+                modifier = Modifier.semantics {
+                    contentDescription = if (selected) {
+                        "Prise ${connector.displayName} sélectionnée, toucher pour retirer le filtre"
+                    } else {
+                        "Filtrer sur la prise ${connector.displayName}"
+                    }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+        items(MIN_POWER_OPTIONS) { power ->
+            val selected = power == minPowerKw
+            FilterChip(
+                selected = selected,
+                onClick = { onMinPowerSelected(power) },
+                label = {
+                    Text(
+                        text = if (power == 0) "Toutes puissances" else "≥ $power kW",
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.tertiary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onTertiary
+                )
+            )
         }
     }
 }
@@ -387,7 +544,10 @@ private fun ErrorContent(
 }
 
 @Composable
-private fun EmptyContent() {
+private fun EmptyContent(
+    emoji: String = "⛽",
+    message: String = "Aucune station trouvée à proximité."
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -397,14 +557,14 @@ private fun EmptyContent() {
             modifier = Modifier.padding(32.dp)
         ) {
             Text(
-                text = "⛽",
+                text = emoji,
                 style = MaterialTheme.typography.headlineLarge
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Aucune station trouvée à proximité.",
+                text = message,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -462,6 +622,12 @@ private fun DashboardScreenPreview() {
                 ),
                 selectedFuel = FuelType.GAZOLE
             ),
+            mode = EnergyMode.FUEL,
+            selectedConnector = null,
+            minPowerKw = 0,
+            onModeSelected = {},
+            onConnectorToggled = {},
+            onMinPowerSelected = {},
             selectedFuel = FuelType.GAZOLE,
             selectedRadius = 10,
             isRefreshing = false,
