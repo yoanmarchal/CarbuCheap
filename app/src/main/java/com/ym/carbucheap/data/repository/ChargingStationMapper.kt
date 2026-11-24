@@ -13,7 +13,6 @@ object ChargingStationMapper {
     private val TRUTHY_SQL = "('true','True','TRUE','1')"
 
     private val POSTAL_CODE = Regex("""\b(\d{5})\b""")
-    private val PRICE_PER_KWH = Regex("""(\d+[.,]\d+)\s*€?\s*/\s*kwh""", RegexOption.IGNORE_CASE)
     private val ALWAYS_OPEN = Regex("""^\s*(24/7|Mo-Su 00:00-(23:5\d|24:00))\s*$""")
 
     val SELECT_FIELDS = listOf(
@@ -66,6 +65,7 @@ object ChargingStationMapper {
         userLon: Double
     ): ChargingStation {
         val first = points.first()
+        val tariffs = points.mapNotNull { it.pricing }.distinct().map(TariffParser::parse)
         val lat = first.latitude!!
         val lon = first.longitude!!
         return ChargingStation(
@@ -82,7 +82,10 @@ object ChargingStationMapper {
             pointCount = points.size,
             connectors = Connector.entries.filter { c -> points.any { isTrue(it.flagFor(c)) } }.toSet(),
             isFree = points.any { isTrue(it.free) },
-            pricePerKwh = points.mapNotNull { parsePricePerKwh(it.pricing) }.minOrNull(),
+            minPricePerKwh = tariffs.mapNotNull { it.minPerKwh }.minOrNull(),
+            maxPricePerKwh = tariffs.mapNotNull { it.maxPerKwh }.maxOrNull(),
+            parkingFeePerHour = tariffs.mapNotNull { it.parkingFeePerHour }.minOrNull(),
+            pricingUrl = tariffs.firstNotNullOfOrNull { it.url },
             isOpen24h = points.any { it.openingHours?.let(ALWAYS_OPEN::matches) == true },
             lastUpdate = points.mapNotNull { it.lastUpdate }.maxOrNull().orEmpty()
         )
@@ -107,13 +110,6 @@ object ChargingStationMapper {
 
     internal fun isTrue(value: String?): Boolean =
         value?.trim()?.lowercase() in TRUTHY
-
-    /** "0,38 €/kWh" → 0.38. Ignores free-text tariffs and implausible values. */
-    internal fun parsePricePerKwh(text: String?): Double? {
-        if (text == null) return null
-        val value = PRICE_PER_KWH.find(text)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
-        return value?.takeIf { it in 0.05..2.0 }
-    }
 
     private fun ChargePointRecord.flagFor(connector: Connector): String? = when (connector) {
         Connector.CCS -> ccs

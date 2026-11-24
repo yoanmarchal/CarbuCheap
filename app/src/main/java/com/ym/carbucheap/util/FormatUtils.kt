@@ -46,6 +46,14 @@ object FormatUtils {
     fun formatPricePerKwh(price: Double): String =
         String.format(Locale.FRANCE, "%.2f €/kWh", price)
 
+    /** "0,29 €/kWh", or "0,29 – 0,39 €/kWh" when the tariff varies (time of day, power…). */
+    fun formatPricePerKwhRange(min: Double, max: Double?): String =
+        if (max == null || String.format(Locale.FRANCE, "%.2f", max) == String.format(Locale.FRANCE, "%.2f", min)) {
+            formatPricePerKwh(min)
+        } else {
+            String.format(Locale.FRANCE, "%.2f – %.2f €/kWh", min, max)
+        }
+
     /** "MAJ il y a 3 h" style label, or null when the date is unknown. */
     fun formatUpdateAge(iso: String, now: Instant = Instant.now()): String? {
         val updated = parseUpdate(iso) ?: return null

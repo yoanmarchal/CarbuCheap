@@ -32,4 +32,15 @@ object IntentUtils {
             }
         }
     }
+
+    /** Opens an http(s) link from the open data (operator tariff page) in the browser. */
+    fun openUrl(context: Context, url: String) {
+        val uri = Uri.parse(url)
+        if (uri.scheme !in setOf("http", "https")) return
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "Aucun navigateur trouvé", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

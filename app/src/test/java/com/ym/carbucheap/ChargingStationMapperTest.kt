@@ -68,7 +68,8 @@ class ChargingStationMapperTest {
         assertEquals(2, lobau.pointCount)
         assertEquals(100.0, lobau.maxPowerKw, 0.0)
         assertEquals(setOf(Connector.CCS, Connector.TYPE_2), lobau.connectors)
-        assertEquals(0.38, lobau.pricePerKwh!!, 0.0)
+        assertEquals(0.38, lobau.minPricePerKwh!!, 0.0)
+        assertEquals(0.38, lobau.maxPricePerKwh!!, 0.0)
         assertTrue(lobau.isOpen24h)
         assertFalse(lobau.isFree)
         assertEquals("2026-10-31T00:00:00+00:00", lobau.lastUpdate)
@@ -90,16 +91,6 @@ class ChargingStationMapperTest {
             userLat, userLon
         )
         assertEquals(setOf("C", "D"), stations.map { it.id }.toSet())
-    }
-
-    @Test
-    fun parsesSimpleTariffsOnly() {
-        assertEquals(0.30, ChargingStationMapper.parsePricePerKwh("0,30€ / kwh pour les non abonnés.")!!, 0.0)
-        assertEquals(0.59, ChargingStationMapper.parsePricePerKwh("0.59 €/kWh")!!, 0.0)
-        assertNull(ChargingStationMapper.parsePricePerKwh("https://belib.paris"))
-        assertNull(ChargingStationMapper.parsePricePerKwh("Les tarifs de recharge peuvent varier"))
-        assertNull(ChargingStationMapper.parsePricePerKwh("15,00 €/kWh"))
-        assertNull(ChargingStationMapper.parsePricePerKwh(null))
     }
 
     @Test

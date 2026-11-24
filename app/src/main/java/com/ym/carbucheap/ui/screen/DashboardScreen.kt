@@ -261,7 +261,8 @@ private fun DashboardContent(
                                                 longitude = station.longitude,
                                                 label = station.name
                                             )
-                                        }
+                                        },
+                                        onPricingClick = { url -> IntentUtils.openUrl(context, url) }
                                     )
                                 }
                             }

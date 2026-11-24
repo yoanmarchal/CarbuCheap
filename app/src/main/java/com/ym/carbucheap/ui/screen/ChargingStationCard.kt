@@ -2,6 +2,8 @@ package com.ym.carbucheap.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +14,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.EuroSymbol
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.EvStation
+import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Power
 import androidx.compose.material3.Card
@@ -21,6 +25,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +41,7 @@ import com.ym.carbucheap.util.FormatUtils
 fun ChargingStationCard(
     station: ChargingStation,
     onNavigateClick: () -> Unit,
+    onPricingClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -102,27 +108,52 @@ fun ChargingStationCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 val pointsLabel = if (station.pointCount > 1) "${station.pointCount} points" else "1 point"
-                val connectorsLabel = station.connectors.joinToString(" · ") { it.displayName }
+                val connectorsLabel = station.connectors.joinToString(" · ") { it.shortName }
                 ChargingInfoLine(
                     icon = Icons.Filled.Power,
                     text = listOf(pointsLabel, connectorsLabel).filter { it.isNotEmpty() }.joinToString(" · "),
                     color = colors.onSurfaceVariant
                 )
 
-                val priceLabel = when {
-                    station.isFree -> "Gratuit"
-                    station.pricePerKwh != null -> FormatUtils.formatPricePerKwh(station.pricePerKwh)
-                    else -> null
-                }
-                priceLabel?.let {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    ChargingInfoLine(icon = Icons.Filled.EuroSymbol, text = it, color = colors.onSurfaceVariant)
-                }
-
                 if (station.isOpen24h) {
                     Spacer(modifier = Modifier.height(2.dp))
                     ChargingInfoLine(icon = Icons.Filled.AccessTime, text = "Ouvert 24/7", color = colors.onSurfaceVariant)
                 }
+
+                val hasPrice = station.isFree || station.minPricePerKwh != null
+                Spacer(modifier = Modifier.height(2.dp))
+                ChargingInfoLine(
+                    icon = Icons.Filled.EuroSymbol,
+                    text = when {
+                        station.isFree -> "Gratuit"
+                        station.minPricePerKwh != null ->
+                            FormatUtils.formatPricePerKwhRange(station.minPricePerKwh, station.maxPricePerKwh)
+                        else -> "Tarif non communiqué"
+                    },
+                    color = colors.onSurfaceVariant
+                )
+
+                station.parkingFeePerHour?.let { fee ->
+                    Spacer(modifier = Modifier.height(2.dp))
+                    ChargingInfoLine(
+                        icon = Icons.Filled.LocalParking,
+                        text = "+ ${FormatUtils.formatEuros(fee)}/h d'occupation après la charge",
+                        color = colors.onSurfaceVariant
+                    )
+                }
+
+                if (!hasPrice && station.pricingUrl != null) {
+                    TextButton(
+                        onClick = { onPricingClick(station.pricingUrl) },
+                        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                        modifier = Modifier.heightIn(min = 48.dp) // MD3 minimum touch target
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Voir les tarifs de l'opérateur")
+                    }
+                }
+
             }
 
             Spacer(modifier = Modifier.width(8.dp))
