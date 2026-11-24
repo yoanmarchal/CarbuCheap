@@ -29,6 +29,8 @@ data class StationRecord(
     @param:Json(name = "gplc_prix") val gplcPrix: Double?,
     @param:Json(name = "gplc_maj") val gplcMaj: String?,
     @param:Json(name = "carburants_disponibles") val carburantsDisponibles: List<String>?,
+    /** ";"-separated fuel names, e.g. "SP95;E10". Null when nothing is out of stock. */
+    @param:Json(name = "carburants_rupture_temporaire") val carburantsRuptureTemporaire: String? = null,
     @param:Json(name = "services_service") val services: List<String>?,
     @param:Json(name = "horaires_automate_24_24") val automate24: String?
 ) {

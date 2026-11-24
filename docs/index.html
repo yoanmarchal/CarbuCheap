@@ -37,12 +37,12 @@
 <body>
 
     <h1>⛽ Politique de Confidentialité</h1>
-    <p class="subtitle">Application CarbuCheap &mdash; Dernière mise à jour : avril 2026</p>
+    <p class="subtitle">Application CarbuCheap &mdash; Dernière mise à jour : novembre 2026</p>
 
     <div class="highlight-box">
         <strong>Résumé en 3 points :</strong>
         <ul style="margin-top: 8px; margin-bottom: 0;">
-            <li>Votre position GPS est utilisée uniquement pour trouver les stations proches de vous.</li>
+            <li>Votre position GPS est utilisée uniquement pour trouver les stations-service et bornes de recharge proches de vous.</li>
             <li>Aucune donnée personnelle n'est collectée, stockée ou partagée avec des tiers.</li>
             <li>L'application n'affiche aucune publicité.</li>
         </ul>
@@ -65,7 +65,7 @@
     </ul>
     <p>
         Cette donnée est utilisée <strong>exclusivement en local sur votre appareil</strong> pour
-        construire la requête envoyée à l'API publique du gouvernement. Elle n'est ni
+        construire les requêtes envoyées aux API publiques listées ci-dessous. Elle n'est ni
         enregistrée, ni transmise à nos serveurs, ni partagée avec qui que ce soit.
     </p>
 
@@ -81,17 +81,25 @@
 
     <h2>4. Tiers et API utilisées</h2>
     <p>
-        L'application interroge l'API officielle du gouvernement français pour récupérer les
-        prix des carburants :
+        L'application interroge deux API publiques d'open data :
     </p>
     <ul>
         <li>
             <strong>data.economie.gouv.fr</strong> — Prix des carburants en France
             (flux instantané v2). Cette API est publique, gratuite et sous
-            <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">licence Open Database License (ODbL)</a>.
+            <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/" target="_blank" rel="noopener">Licence Ouverte v2.0 (Etalab)</a>.
             <br>
             La requête envoyée contient uniquement vos coordonnées GPS (latitude, longitude)
             et le type de carburant sélectionné. Aucun identifiant personnel n'est inclus.
+        </li>
+        <li>
+            <strong>odre.opendatasoft.com</strong> — Bornes de recharge pour véhicules électriques
+            (jeu de données consolidé IRVE), uniquement en mode « Électrique ». Cette API est
+            publique, gratuite et sous <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/" target="_blank" rel="noopener">Licence Ouverte v2.0 (Etalab)</a>.
+            <br>
+            La requête envoyée contient uniquement vos coordonnées GPS (latitude, longitude),
+            le rayon de recherche et les filtres choisis (type de prise, puissance minimale).
+            Aucun identifiant personnel n'est inclus.
         </li>
     </ul>
     <p>
@@ -102,9 +110,11 @@
     <h2>5. Stockage local (cache)</h2>
     <p>
         Pour améliorer les performances, les résultats de recherche sont stockés temporairement
-        en mémoire vive de l'appareil (cache en RAM) pendant 15 minutes maximum.
+        en mémoire vive de l'appareil (cache en RAM) pendant 15 minutes maximum pour les prix
+        des carburants et 1 heure maximum pour les bornes de recharge.
         Ces données sont automatiquement supprimées à la fermeture de l'application.
-        Aucun fichier n'est écrit dans le stockage permanent de votre appareil.
+        Seules vos préférences d'affichage (mode, carburant, rayon, filtres de recharge) sont
+        enregistrées sur l'appareil ; elles ne contiennent aucune donnée de localisation.
     </p>
 
     <h2>6. Permissions Android requises</h2>
@@ -126,7 +136,7 @@
             </tr>
             <tr>
                 <td style="padding: 8px 12px; border: 1px solid #ddd;"><code>INTERNET</code></td>
-                <td style="padding: 8px 12px; border: 1px solid #ddd;">Accès à l'API gouvernementale des prix carburants</td>
+                <td style="padding: 8px 12px; border: 1px solid #ddd;">Accès aux API open data des prix carburants et des bornes de recharge</td>
             </tr>
         </tbody>
     </table>
@@ -151,7 +161,7 @@
     </p>
 
     <footer>
-        <p>© 2026 CarbuCheap &mdash; Données source : <a href="https://data.economie.gouv.fr" target="_blank" rel="noopener">data.economie.gouv.fr</a> &mdash; Licence ODbL.</p>
+        <p>© 2026 CarbuCheap &mdash; Données source : <a href="https://data.economie.gouv.fr" target="_blank" rel="noopener">data.economie.gouv.fr</a> et <a href="https://odre.opendatasoft.com" target="_blank" rel="noopener">odre.opendatasoft.com</a> &mdash; Licence Ouverte v2.0 (Etalab).</p>
     </footer>
 
 </body>

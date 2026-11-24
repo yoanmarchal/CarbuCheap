@@ -1,5 +1,6 @@
 package com.ym.carbucheap.data.location
 
+import kotlin.coroutines.cancellation.CancellationException
 import android.annotation.SuppressLint
 import android.content.Context
 import com.google.android.gms.location.LocationServices
@@ -50,6 +51,8 @@ class LocationProvider(context: Context) {
             } else {
                 Result.failure(Exception("Impossible d'obtenir la position GPS"))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

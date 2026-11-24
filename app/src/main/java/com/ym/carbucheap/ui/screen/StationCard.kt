@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
@@ -27,12 +30,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ym.carbucheap.data.model.Station
 import com.ym.carbucheap.util.FormatUtils
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun StationCard(
     station: Station,
     position: Int,
+    onClick: () -> Unit,
     onNavigateClick: () -> Unit,
+    savings: Double? = null,
     modifier: Modifier = Modifier
 ) {
     val isHighlighted = position == 0
@@ -46,6 +53,7 @@ fun StationCard(
     val subtextColor       = if (isHighlighted) colors.onPrimaryContainer else colors.onSurfaceVariant
 
     Card(
+        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
@@ -75,7 +83,7 @@ fun StationCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = station.address,
+                    text = station.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -84,7 +92,7 @@ fun StationCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "${station.postalCode} ${station.city}",
+                    text = station.subtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = subtextColor,
                     maxLines = 1,
@@ -110,6 +118,25 @@ fun StationCard(
                         modifier = Modifier.align(Alignment.Bottom)
                     )
                 }
+
+                val isStale = FormatUtils.isStale(station.lastUpdate)
+                FormatUtils.formatUpdateAge(station.lastUpdate)?.let { age ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    InfoLine(
+                        icon = if (isStale) Icons.Filled.WarningAmber else Icons.Filled.Schedule,
+                        text = if (isStale) "Prix à vérifier · $age" else age,
+                        color = if (isStale && !isHighlighted) colors.error else subtextColor
+                    )
+                }
+
+                savings?.let {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    InfoLine(
+                        icon = Icons.Filled.Savings,
+                        text = "${FormatUtils.formatEuros(it)} de moins par plein",
+                        color = subtextColor
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -129,10 +156,30 @@ fun StationCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Navigation,
-                    contentDescription = "Naviguer vers ${station.address}"
+                    contentDescription = "Naviguer vers ${station.title}, ${station.address}"
                 )
             }
         }
     }
 }
 
+
+@Composable
+private fun InfoLine(icon: ImageVector, text: String, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = color
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}

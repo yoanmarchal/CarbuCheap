@@ -1,0 +1,196 @@
+package com.ym.carbucheap.ui.screen
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.EuroSymbol
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.EvStation
+import androidx.compose.material.icons.filled.LocalParking
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Power
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.ym.carbucheap.data.model.ChargingStation
+import com.ym.carbucheap.util.FormatUtils
+
+@Composable
+fun ChargingStationCard(
+    station: ChargingStation,
+    onNavigateClick: () -> Unit,
+    onPricingClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+
+    Card(
+        onClick = onNavigateClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLow,
+            contentColor = colors.onSurface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.EvStation,
+                contentDescription = null,
+                modifier = Modifier.size(36.dp),
+                tint = colors.primary
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = station.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                station.networkLabel?.let { network ->
+                    Text(
+                        text = network,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = colors.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = station.address,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        text = FormatUtils.formatPower(station.maxPowerKw),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.tertiary
+                    )
+                    Text(
+                        text = FormatUtils.formatDistance(station.distance),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.Bottom)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                val pointsLabel = if (station.pointCount > 1) "${station.pointCount} points" else "1 point"
+                val connectorsLabel = station.connectors.joinToString(" · ") { it.shortName }
+                ChargingInfoLine(
+                    icon = Icons.Filled.Power,
+                    text = listOf(pointsLabel, connectorsLabel).filter { it.isNotEmpty() }.joinToString(" · "),
+                    color = colors.onSurfaceVariant
+                )
+
+                if (station.isOpen24h) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    ChargingInfoLine(icon = Icons.Filled.AccessTime, text = "Ouvert 24/7", color = colors.onSurfaceVariant)
+                }
+
+                val hasPrice = station.isFree || station.minPricePerKwh != null
+                Spacer(modifier = Modifier.height(2.dp))
+                ChargingInfoLine(
+                    icon = Icons.Filled.EuroSymbol,
+                    text = when {
+                        station.isFree -> "Gratuit"
+                        station.minPricePerKwh != null ->
+                            FormatUtils.formatPricePerKwhRange(station.minPricePerKwh, station.maxPricePerKwh)
+                        else -> "Tarif non communiqué"
+                    },
+                    color = colors.onSurfaceVariant
+                )
+
+                station.parkingFeePerHour?.let { fee ->
+                    Spacer(modifier = Modifier.height(2.dp))
+                    ChargingInfoLine(
+                        icon = Icons.Filled.LocalParking,
+                        text = "+ ${FormatUtils.formatEuros(fee)}/h d'occupation après la charge",
+                        color = colors.onSurfaceVariant
+                    )
+                }
+
+                if (!hasPrice && station.pricingUrl != null) {
+                    TextButton(
+                        onClick = { onPricingClick(station.pricingUrl) },
+                        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                        modifier = Modifier.heightIn(min = 48.dp) // MD3 minimum touch target
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Voir les tarifs de l'opérateur")
+                    }
+                }
+
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            FilledTonalIconButton(
+                onClick = onNavigateClick,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Navigation,
+                    contentDescription = "Naviguer vers ${station.name}"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChargingInfoLine(icon: ImageVector, text: String, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(14.dp), tint = color)
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}

@@ -14,6 +14,9 @@ object RetrofitInstance {
     private const val BASE_URL =
         "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/"
 
+    private const val IRVE_BASE_URL =
+        "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/bornes-irve/"
+
     private val moshi: Moshi = Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())
         .build()
@@ -40,5 +43,13 @@ object RetrofitInstance {
             .build()
             .create(FuelApiService::class.java)
     }
-}
 
+    val irveApi: IrveApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(IRVE_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(IrveApiService::class.java)
+    }
+}

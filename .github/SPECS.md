@@ -1,86 +1,73 @@
 # Cahier des Charges : CarbuCheap France
 
 ## 🎯 Vision Produit
-**CarbuCheap France** est une application mobile minimaliste visant à permettre aux conducteurs de localiser, en temps réel et en un clic, les stations-service les moins chères en France, à proximité immédiate de leur position.
+**CarbuCheap France** est une application Android minimaliste qui permet aux conducteurs de localiser, en temps réel et en un clic, les stations-service les moins chères à proximité immédiate de leur position.
 
-*   **Objectif Principal :** Offrir une expérience utilisateur ultra-rapide et simple, priorisant l'accès à l'information tarifaire immédiate.
+*   **Objectif Principal :** Expérience ultra-rapide et simple, centrée sur l'information tarifaire immédiate.
 *   **Cible Utilisateur :** Conducteurs soucieux d'optimiser leur budget carburant.
 
 ---
 
-## ✨ Spécifications Fonctionnelles (MVP)
+## ✨ Spécifications Fonctionnelles
 
 ### A. Fonctionnalités Clés
-*   **Géolocalisation :** Récupération automatique des coordonnées GPS (Latitude/Longitude) de l'utilisateur.
-*   **Recherche Géographique :** Requête auprès de l'API Open Data gouvernementale, avec un rayon de recherche par défaut de 10 km.
-*   **Tri des Résultats :** Affichage obligatoire des stations triées par prix croissant (le moins cher en tête).
-*   **Navigation Externe :** Bouton d'action pour lancer la navigation directe vers Google Maps ou Waze avec les coordonnées GPS de la station sélectionnée.
-*   **Filtrage :** Sélecteur de type de carburant obligatoire (Gazole, SP95, SP98, E85, GPL).
+*   **Géolocalisation :** Récupération automatique de la position GPS (Fused Location Provider), avec repli sur la dernière position connue.
+*   **Recherche Géographique :** Requête à l'API Open Data gouvernementale avec filtrage `within_distance` côté serveur. Rayon par défaut : 10 km (options : 5, 10, 20, 30, 50 km).
+*   **Tri des Résultats :** Stations triées par prix croissant (le moins cher en tête).
+*   **Filtrage :** Sélecteur de carburant : Gazole, SP95, SP98, E10, E85, GPLc.
+*   **Préférences :** Carburant et rayon mémorisés entre deux lancements (DataStore).
+*   **Navigation Externe :** Un clic lance le guidage vers la station (Google Maps, sinon toute app gérant les intents `geo:`).
 
 ### B. Parcours Utilisateur (UX Flow)
-1.  **Splash Screen :** Initialisation de l'application et vérification des permissions GPS.
-2.  **Dashboard Principal :** Affichage d'une liste épurée des stations contenant : `[Nom, Ville, Prix, Distance]`.
-3.  **Interaction :** Un clic sur une station doit déclencher le lancement du guidage GPS externe.
+1.  **Splash Screen :** Demande de la permission de localisation, avec gestion du refus et du refus définitif (renvoi vers les paramètres).
+2.  **Dashboard :** Liste des stations : `[Adresse, Ville, Prix, Distance, Date de mise à jour]`. Pull-to-refresh.
+3.  **Interaction :** Un clic sur une station déclenche le guidage GPS externe.
 
 ---
 
 ## ⚙️ Architecture Technique
 
-### A. Stack Technologique
-*   **Langage :** Dart (Typage strict requis).
-*   **Gestion d'État :** Riverpod ou Bloc.
-*   **Réseau :** `dio` ou `http` pour les requêtes REST.
-*   **Géolocalisation :** `geolocator`.
-*   **Navigation Externe :** `url_launcher`.
-*   **Sérialisation :** `json_serializable` pour un typage robuste.
+### A. Stack
+*   **Langage :** Kotlin
+*   **UI :** Jetpack Compose + Material Design 3
+*   **Architecture :** MVVM — `ViewModel` + `StateFlow`, état d'écran modélisé par une `sealed class` (`Loading` / `Success` / `Error`)
+*   **Réseau :** Retrofit + OkHttp, désérialisation Moshi
+*   **Géolocalisation :** Google Play Services — Fused Location Provider
+*   **Persistance :** DataStore Preferences
+*   **Navigation :** Navigation Compose type-safe (`@Serializable`)
+*   **Cibles :** minSdk 26, targetSdk 37
 
-### B. Modèle de Données (Data Contract)
-Toute réponse API doit être mappée sur une classe Dart immuable.
+### B. Modèle de Données
+Les réponses API (`StationRecord`) sont mappées vers un modèle de domaine immuable :
 
-\`\`\`dart
-class FuelStation {
-  final String id;
-  final String adresse;
-  final String ville;
-  final double prix;
-  final String carburant;
-  final double lat;
-  final double lon;
-
-  FuelStation({
-    required this.id,
-    required this.adresse,
-    required this.ville,
-    required this.prix,
-    required this.carburant,
-    required this.lat,
-    required this.lon,
-  });
-}
-\`\`\`
+```kotlin
+data class Station(
+    val id: String,
+    val name: String,
+    val address: String,
+    val city: String,
+    val postalCode: String,
+    val latitude: Double,
+    val longitude: Double,
+    val price: Double,
+    val fuelType: String,
+    val distance: Double, // km, à vol d'oiseau (Haversine)
+    val lastUpdate: String
+)
+```
 
 ---
 
 ## 🚀 Contraintes et Performance
 
-*   **Mise en Cache :** Implémenter un stockage local des résultats (TTL de 15 minutes) pour minimiser les appels API.
+*   **Mise en Cache :** Cache mémoire des résultats, invalidé après 15 minutes ou si l'utilisateur s'est déplacé de plus d'1 km.
+*   **Concurrence :** Une seule requête de chargement active à la fois ; tout nouveau filtre annule la précédente.
 *   **Latence Cible :** Temps de réponse global < 2 secondes sur réseau 4G.
-*   **Robustesse :** Gestion systématique des erreurs (API indisponible, perte de signal GPS).
-
----
-
-## 🗺️ Roadmap de Développement
-
-| Phase | Tâche Principale |
-| :--- | :--- |
-| **Phase 1** | Configuration du projet, gestion des permissions GPS, et test des requêtes API (WKT). |
-| **Phase 2** | Implémentation du modèle de données (Typage fort) et du Service API. |
-| **Phase 3** | Développement de l'UI (Dashboard) et intégration de la géolocalisation. |
-| **Phase 4** | Intégration du bouton de navigation externe (Google Maps/Waze). |
-| **Phase 5** | Tests de robustesse et finalisation de la gestion des erreurs. |
+*   **Robustesse :** Gestion des erreurs (API indisponible, GPS indisponible, permission refusée).
+*   **Confidentialité :** Aucune donnée personnelle collectée ni transmise ; la position sert uniquement à la requête API.
 
 ---
 
 ## 📚 Annexes
-*   **Source API :** data.economie.gouv.fr
-*   **Licence :** Open Data (Open Database License).
+*   **Source API :** [data.economie.gouv.fr — Prix des carburants, flux instantané v2](https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/)
+*   **Licence des données :** Licence Ouverte / Open Licence (Etalab)

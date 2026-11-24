@@ -1,5 +1,6 @@
 package com.ym.carbucheap.data.repository
 
+import kotlin.coroutines.cancellation.CancellationException
 import android.util.Log
 import com.ym.carbucheap.data.model.FuelType
 import com.ym.carbucheap.data.model.Station
@@ -10,7 +11,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "FuelRepository"
 
-class FuelRepository(private val api: FuelApiService) {
+class FuelRepository(
+    private val api: FuelApiService,
+    /** id → brand name; may be empty. */
+    private val stationNames: suspend () -> Map<String, String> = { emptyMap() }
+) {
 
     private data class CacheEntry(
         val timestamp: Long,
@@ -66,28 +71,10 @@ class FuelRepository(private val api: FuelApiService) {
 
             Log.d(TAG, "API response — totalCount=${response.totalCount}, results=${response.results?.size ?: 0}")
 
+            val names = stationNames()
             val stations = (response.results ?: emptyList())
                 .mapNotNull { record ->
-                    val price = record.getPriceForFuel(fuelType)
-                        ?: return@mapNotNull null
-                    if (price <= 0) return@mapNotNull null
-
-                    val lat = record.geom?.lat ?: return@mapNotNull null
-                    val lon = record.geom.lon ?: return@mapNotNull null
-
-                    Station(
-                        id = record.id?.toString() ?: "",
-                        name = buildStationName(record.adresse, record.ville),
-                        address = record.adresse?.trim()?.replaceFirstChar { it.titlecase() } ?: "",
-                        city = record.ville?.trim()?.replaceFirstChar { it.titlecase() } ?: "",
-                        postalCode = record.cp ?: "",
-                        latitude = lat,
-                        longitude = lon,
-                        price = price,
-                        fuelType = fuelType.displayName,
-                        distance = DistanceUtils.haversineDistance(userLat, userLon, lat, lon),
-                        lastUpdate = record.getLastUpdateForFuel(fuelType) ?: ""
-                    )
+                    StationMapper.toStation(record, fuelType, userLat, userLon, names[record.id?.toString()])
                 }
                 .sortedBy { it.price }
 
@@ -100,17 +87,11 @@ class FuelRepository(private val api: FuelApiService) {
             )
 
             Result.success(stations)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    private fun buildStationName(adresse: String?, ville: String?): String {
-        val parts = listOfNotNull(
-            adresse?.trim()?.replaceFirstChar { it.titlecase() },
-            ville?.trim()?.replaceFirstChar { it.titlecase() }
-        )
-        return parts.joinToString(", ").ifEmpty { "Station" }
     }
 
     fun clearCache() {
