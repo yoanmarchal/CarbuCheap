@@ -44,3 +44,13 @@ signing.properties
 *.log
 hs_err_pid*
 replay_pid*
+
+# --- Kotlin compiler daemon data ---
+.kotlin/
+
+# --- IDE: per-user state ---
+/.idea/planningMode.xml
+
+# --- Local AI agent tooling ---
+.agents/
+skills-lock.json

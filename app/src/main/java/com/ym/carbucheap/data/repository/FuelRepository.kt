@@ -1,5 +1,6 @@
 package com.ym.carbucheap.data.repository
 
+import kotlin.coroutines.cancellation.CancellationException
 import android.util.Log
 import com.ym.carbucheap.data.model.FuelType
 import com.ym.carbucheap.data.model.Station
@@ -100,6 +101,8 @@ class FuelRepository(private val api: FuelApiService) {
             )
 
             Result.success(stations)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -10,6 +10,7 @@ import com.ym.carbucheap.data.model.Station
 import com.ym.carbucheap.data.remote.RetrofitInstance
 import com.ym.carbucheap.data.repository.FuelRepository
 import com.ym.carbucheap.data.repository.UserPreferencesRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,25 +57,38 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun loadStations(forceRefresh: Boolean = false) {
-        viewModelScope.launch {
-            _uiState.value = DashboardUiState.Loading
+    /**
+     * Single in-flight load. Every new request cancels the previous one, so a slow
+     * response for an old fuel type / radius can never overwrite the current state.
+     */
+    private var loadJob: Job? = null
 
-            val locationResult = locationProvider.getCurrentLocation()
-            locationResult.fold(
-                onSuccess = { (lat, lon) ->
-                    Log.d("DashboardVM", "GPS position: lat=$lat, lon=$lon")
-                    lastLat = lat
-                    lastLon = lon
-                    fetchStations(lat, lon, _selectedFuelType.value, _selectedRadius.value, forceRefresh)
-                },
-                onFailure = {
-                    _uiState.value = DashboardUiState.Error(
-                        "Impossible d'obtenir votre position GPS.\nVérifiez que la localisation est activée."
-                    )
-                }
-            )
+    private fun launchLoad(block: suspend () -> Unit) {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch { block() }
+    }
+
+    fun loadStations(forceRefresh: Boolean = false) {
+        launchLoad {
+            _uiState.value = DashboardUiState.Loading
+            locateAndFetch(forceRefresh)
         }
+    }
+
+    private suspend fun locateAndFetch(forceRefresh: Boolean) {
+        locationProvider.getCurrentLocation().fold(
+            onSuccess = { (lat, lon) ->
+                Log.d("DashboardVM", "GPS position: lat=$lat, lon=$lon")
+                lastLat = lat
+                lastLon = lon
+                fetchStations(lat, lon, _selectedFuelType.value, _selectedRadius.value, forceRefresh)
+            },
+            onFailure = {
+                _uiState.value = DashboardUiState.Error(
+                    "Impossible d'obtenir votre position GPS.\nVérifiez que la localisation est activée."
+                )
+            }
+        )
     }
 
     fun selectFuelType(fuelType: FuelType) {
@@ -82,16 +96,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             preferencesRepository.saveFuelType(fuelType)
         }
-        val lat = lastLat
-        val lon = lastLon
-        if (lat != null && lon != null) {
-            viewModelScope.launch {
-                _uiState.value = DashboardUiState.Loading
-                fetchStations(lat, lon, fuelType, _selectedRadius.value)
-            }
-        } else {
-            loadStations()
-        }
+        reloadForSelection()
     }
 
     fun selectRadius(radiusKm: Int) {
@@ -99,29 +104,37 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             preferencesRepository.saveRadius(radiusKm)
         }
+        reloadForSelection()
+    }
+
+    private fun reloadForSelection() {
         val lat = lastLat
         val lon = lastLon
-        if (lat != null && lon != null) {
-            viewModelScope.launch {
-                _uiState.value = DashboardUiState.Loading
-                fetchStations(lat, lon, _selectedFuelType.value, radiusKm)
-            }
-        } else {
+        if (lat == null || lon == null) {
             loadStations()
+            return
+        }
+        launchLoad {
+            _isRefreshing.value = false
+            _uiState.value = DashboardUiState.Loading
+            fetchStations(lat, lon, _selectedFuelType.value, _selectedRadius.value)
         }
     }
 
     fun refresh() {
         val lat = lastLat
         val lon = lastLon
-        if (lat != null && lon != null) {
-            viewModelScope.launch {
-                _isRefreshing.value = true
+        if (lat == null || lon == null) {
+            loadStations(forceRefresh = true)
+            return
+        }
+        launchLoad {
+            _isRefreshing.value = true
+            try {
                 fetchStations(lat, lon, _selectedFuelType.value, _selectedRadius.value, forceRefresh = true)
+            } finally {
                 _isRefreshing.value = false
             }
-        } else {
-            loadStations(forceRefresh = true)
         }
     }
 
