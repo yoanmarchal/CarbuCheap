@@ -30,6 +30,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.outlined.EvStation
+import androidx.compose.material.icons.outlined.LocalGasStation
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,9 +43,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -176,6 +178,9 @@ private fun DashboardContent(
                     scrolledContainerColor = MaterialTheme.colorScheme.surface
                 )
             )
+        },
+        bottomBar = {
+            ModeNavigationBar(mode = mode, onModeSelected = onModeSelected)
         }
     ) { paddingValues ->
         Column(
@@ -184,8 +189,6 @@ private fun DashboardContent(
                 .consumeWindowInsets(paddingValues)
                 .padding(paddingValues)
         ) {
-            ModeSelector(mode = mode, onModeSelected = onModeSelected)
-
             when (mode) {
                 EnergyMode.FUEL -> FuelTypeSelector(
                     selectedFuel = selectedFuel,
@@ -329,32 +332,37 @@ private fun DashboardContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+private data class ModeDestination(
+    val mode: EnergyMode,
+    val label: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
+)
+
+private val MODE_DESTINATIONS = listOf(
+    ModeDestination(EnergyMode.FUEL, "Carburant", Icons.Filled.LocalGasStation, Icons.Outlined.LocalGasStation),
+    ModeDestination(EnergyMode.ELECTRIC, "Électrique", Icons.Filled.EvStation, Icons.Outlined.EvStation)
+)
+
+/** MD3 navigation bar: filled icon + indicator pill on the active destination, outlined otherwise. */
 @Composable
-private fun ModeSelector(
+private fun ModeNavigationBar(
     mode: EnergyMode,
     onModeSelected: (EnergyMode) -> Unit
 ) {
-    val options = listOf(
-        Triple(EnergyMode.FUEL, "Carburant", Icons.Filled.LocalGasStation),
-        Triple(EnergyMode.ELECTRIC, "Électrique", Icons.Filled.EvStation)
-    )
-    SingleChoiceSegmentedButtonRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-    ) {
-        options.forEachIndexed { index, (value, label, icon) ->
-            SegmentedButton(
-                selected = mode == value,
-                onClick = { onModeSelected(value) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+    NavigationBar {
+        MODE_DESTINATIONS.forEach { destination ->
+            val selected = mode == destination.mode
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onModeSelected(destination.mode) },
                 icon = {
-                    SegmentedButtonDefaults.Icon(active = mode == value) {
-                        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
-                    }
+                    Icon(
+                        imageVector = if (selected) destination.selectedIcon else destination.unselectedIcon,
+                        contentDescription = null
+                    )
                 },
-                label = { Text(label) }
+                label = { Text(destination.label) }
             )
         }
     }
