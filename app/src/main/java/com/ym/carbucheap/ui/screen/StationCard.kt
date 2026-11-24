@@ -83,7 +83,7 @@ fun StationCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = station.address,
+                    text = station.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -92,7 +92,7 @@ fun StationCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "${station.postalCode} ${station.city}",
+                    text = station.subtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = subtextColor,
                     maxLines = 1,
@@ -156,7 +156,7 @@ fun StationCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Navigation,
-                    contentDescription = "Naviguer vers ${station.address}"
+                    contentDescription = "Naviguer vers ${station.title}, ${station.address}"
                 )
             }
         }

@@ -79,12 +79,12 @@ private fun StationDetailContent(
             .padding(bottom = 24.dp)
     ) {
         Text(
-            text = station.address,
+            text = station.title,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.semantics { heading() }
         )
         Text(
-            text = "${station.postalCode} ${station.city} · ${FormatUtils.formatDistance(station.distance)}",
+            text = "${station.subtitle} · ${FormatUtils.formatDistance(station.distance)}",
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )

@@ -74,6 +74,7 @@ object ChargingStationMapper {
                 ?: first.brand?.trim()?.takeIf { it.isNotEmpty() }
                 ?: first.operator?.trim().orEmpty().ifEmpty { "Borne de recharge" },
             operator = first.operator?.trim().orEmpty(),
+            brand = first.brand?.trim().orEmpty(),
             address = first.address?.trim().orEmpty(),
             latitude = lat,
             longitude = lon,

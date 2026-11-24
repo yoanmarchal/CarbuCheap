@@ -79,6 +79,15 @@ fun ChargingStationCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                station.networkLabel?.let { network ->
+                    Text(
+                        text = network,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = colors.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = station.address,

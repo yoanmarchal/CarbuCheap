@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.outlined.EvStation
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.filled.Refresh
@@ -137,6 +138,10 @@ private fun DashboardContent(
 ) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var showSources by rememberSaveable { mutableStateOf(false) }
+    if (showSources) {
+        SourcesDialog(onDismiss = { showSources = false })
+    }
 
     Scaffold(
         modifier = modifier
@@ -165,6 +170,12 @@ private fun DashboardContent(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showSources = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Sources et licences"
+                        )
+                    }
                     IconButton(onClick = onRefresh) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
@@ -285,7 +296,7 @@ private fun DashboardContent(
                                 context = context,
                                 latitude = station.latitude,
                                 longitude = station.longitude,
-                                label = "${station.address}, ${station.city}"
+                                label = listOfNotNull(station.brand, station.address, station.city).joinToString(", ")
                             )
                         }
                         var detailStationId by rememberSaveable { mutableStateOf<String?>(null) }

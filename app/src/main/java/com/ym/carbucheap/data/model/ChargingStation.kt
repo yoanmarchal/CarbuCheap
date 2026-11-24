@@ -12,6 +12,8 @@ data class ChargingStation(
     val id: String,
     val name: String,
     val operator: String,
+    /** Commercial network ("Izivia Express", "Belib'"…), may be empty. */
+    val brand: String = "",
     val address: String,
     val latitude: Double,
     val longitude: Double,
@@ -29,4 +31,14 @@ data class ChargingStation(
     val pricingUrl: String?,
     val isOpen24h: Boolean,
     val lastUpdate: String
-)
+) {
+    /**
+     * Network to show under the name — tells which badge / app works here.
+     * Brand first, operator as fallback; null when it would just repeat the name.
+     */
+    val networkLabel: String?
+        get() = listOf(brand, operator)
+            .map { it.trim() }
+            .firstOrNull { it.isNotEmpty() }
+            ?.takeUnless { name.contains(it, ignoreCase = true) }
+}

@@ -14,7 +14,8 @@ object StationMapper {
         record: StationRecord,
         fuelType: FuelType,
         userLat: Double,
-        userLon: Double
+        userLon: Double,
+        brand: String? = null
     ): Station? {
         val price = record.getPriceForFuel(fuelType)?.takeIf { it > 0 } ?: return null
         val lat = record.geom?.lat ?: return null
@@ -27,6 +28,7 @@ object StationMapper {
             id = record.id?.toString() ?: "",
             name = listOf(address, city).filter { it.isNotEmpty() }
                 .joinToString(", ").ifEmpty { "Station" },
+            brand = brand?.trim()?.takeIf { it.isNotEmpty() },
             address = address,
             city = city,
             postalCode = record.cp ?: "",

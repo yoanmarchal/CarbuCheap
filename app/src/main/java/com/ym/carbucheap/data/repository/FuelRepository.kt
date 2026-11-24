@@ -11,7 +11,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "FuelRepository"
 
-class FuelRepository(private val api: FuelApiService) {
+class FuelRepository(
+    private val api: FuelApiService,
+    /** id → brand name; may be empty. */
+    private val stationNames: suspend () -> Map<String, String> = { emptyMap() }
+) {
 
     private data class CacheEntry(
         val timestamp: Long,
@@ -67,8 +71,11 @@ class FuelRepository(private val api: FuelApiService) {
 
             Log.d(TAG, "API response — totalCount=${response.totalCount}, results=${response.results?.size ?: 0}")
 
+            val names = stationNames()
             val stations = (response.results ?: emptyList())
-                .mapNotNull { StationMapper.toStation(it, fuelType, userLat, userLon) }
+                .mapNotNull { record ->
+                    StationMapper.toStation(record, fuelType, userLat, userLon, names[record.id?.toString()])
+                }
                 .sortedBy { it.price }
 
             // Update cache

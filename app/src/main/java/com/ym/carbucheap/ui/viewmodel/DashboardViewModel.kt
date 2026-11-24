@@ -13,6 +13,7 @@ import com.ym.carbucheap.data.remote.RetrofitInstance
 import com.ym.carbucheap.data.repository.ChargingRepository
 import com.ym.carbucheap.data.repository.EnergyMode
 import com.ym.carbucheap.data.repository.FuelRepository
+import com.ym.carbucheap.data.repository.StationNameRepository
 import com.ym.carbucheap.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,8 @@ sealed class DashboardUiState {
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = FuelRepository(RetrofitInstance.api)
+    private val stationNameRepository = StationNameRepository(application)
+    private val repository = FuelRepository(RetrofitInstance.api) { stationNameRepository.getNames() }
     private val chargingRepository = ChargingRepository(RetrofitInstance.irveApi)
     private val locationProvider = LocationProvider(application)
     private val preferencesRepository = UserPreferencesRepository(application)
