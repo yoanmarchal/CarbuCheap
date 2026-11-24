@@ -44,6 +44,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -63,6 +67,7 @@ import com.ym.carbucheap.ui.theme.CarbuCheapTheme
 import com.ym.carbucheap.ui.viewmodel.DashboardUiState
 import com.ym.carbucheap.ui.viewmodel.DashboardViewModel
 import com.ym.carbucheap.util.IntentUtils
+import com.ym.carbucheap.util.SavingsUtils
 import com.ym.carbucheap.R
 
 // Listes stables extraites au top-level pour éviter les ré-allocations à chaque recomposition
@@ -198,6 +203,20 @@ private fun DashboardContent(
                     if (state.stations.isEmpty()) {
                         EmptyContent()
                     } else {
+                        val referencePrice = remember(state.stations) {
+                            SavingsUtils.medianPrice(state.stations)
+                        }
+                        val openNavigation: (Station) -> Unit = { station ->
+                            IntentUtils.openNavigation(
+                                context = context,
+                                latitude = station.latitude,
+                                longitude = station.longitude,
+                                label = "${station.address}, ${station.city}"
+                            )
+                        }
+                        var detailStationId by rememberSaveable { mutableStateOf<String?>(null) }
+                        val detailStation = state.stations.firstOrNull { it.id == detailStationId }
+
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,
                             onRefresh = onRefresh,
@@ -214,17 +233,22 @@ private fun DashboardContent(
                                     StationCard(
                                         station = station,
                                         position = index,
-                                        onNavigateClick = {
-                                            IntentUtils.openNavigation(
-                                                context = context,
-                                                latitude = station.latitude,
-                                                longitude = station.longitude,
-                                                label = "${station.address}, ${station.city}"
-                                            )
-                                        }
+                                        savings = SavingsUtils.fullTankSavings(station.price, referencePrice),
+                                        onClick = { detailStationId = station.id },
+                                        onNavigateClick = { openNavigation(station) }
                                     )
                                 }
                             }
+                        }
+
+                        detailStation?.let { station ->
+                            StationDetailSheet(
+                                station = station,
+                                selectedFuel = state.selectedFuel,
+                                savings = SavingsUtils.fullTankSavings(station.price, referencePrice),
+                                onNavigateClick = { openNavigation(station) },
+                                onDismiss = { detailStationId = null }
+                            )
                         }
                     }
                 }

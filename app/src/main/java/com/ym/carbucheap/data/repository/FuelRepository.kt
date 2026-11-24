@@ -68,28 +68,7 @@ class FuelRepository(private val api: FuelApiService) {
             Log.d(TAG, "API response — totalCount=${response.totalCount}, results=${response.results?.size ?: 0}")
 
             val stations = (response.results ?: emptyList())
-                .mapNotNull { record ->
-                    val price = record.getPriceForFuel(fuelType)
-                        ?: return@mapNotNull null
-                    if (price <= 0) return@mapNotNull null
-
-                    val lat = record.geom?.lat ?: return@mapNotNull null
-                    val lon = record.geom.lon ?: return@mapNotNull null
-
-                    Station(
-                        id = record.id?.toString() ?: "",
-                        name = buildStationName(record.adresse, record.ville),
-                        address = record.adresse?.trim()?.replaceFirstChar { it.titlecase() } ?: "",
-                        city = record.ville?.trim()?.replaceFirstChar { it.titlecase() } ?: "",
-                        postalCode = record.cp ?: "",
-                        latitude = lat,
-                        longitude = lon,
-                        price = price,
-                        fuelType = fuelType.displayName,
-                        distance = DistanceUtils.haversineDistance(userLat, userLon, lat, lon),
-                        lastUpdate = record.getLastUpdateForFuel(fuelType) ?: ""
-                    )
-                }
+                .mapNotNull { StationMapper.toStation(it, fuelType, userLat, userLon) }
                 .sortedBy { it.price }
 
             // Update cache
@@ -106,14 +85,6 @@ class FuelRepository(private val api: FuelApiService) {
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    private fun buildStationName(adresse: String?, ville: String?): String {
-        val parts = listOfNotNull(
-            adresse?.trim()?.replaceFirstChar { it.titlecase() },
-            ville?.trim()?.replaceFirstChar { it.titlecase() }
-        )
-        return parts.joinToString(", ").ifEmpty { "Station" }
     }
 
     fun clearCache() {
